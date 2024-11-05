@@ -105,9 +105,13 @@
         </nav>
 
         <!-- Main Content -->
-        <main class="col-md-9 col-lg-10 ms-sm-auto px-4">
-            <div class="bg-white p-3 rounded-lg shadow-sm">
+        <!-- Main Content -->
+        <main class="col-md-9 col-lg-10 ms-sm-auto px-4 pt-3">
+            <div class="d-flex justify-content-between align-items-center">
                 <h2 class="h5 font-semibold mb-2">Production Analysis Chart</h2>
+                <button id="exportPDF" class="btn btn-primary btn-sm">Export as PDF</button>
+            </div>
+            <div class="bg-white p-3 rounded-lg shadow-sm" id="chartContainer">
                 <canvas id="mainChart" class="w-100" style="height: 680px;"></canvas>
             </div>
         </main>
@@ -286,7 +290,7 @@ function updateCharts() {
 }
 
 // Initialize charts and set up event listeners
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {  
     initializeCharts();
     
     // Add event listener for gas field selector
@@ -316,5 +320,46 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial setup
     handleGasFieldSelection();
 });
+
+document.getElementById('exportPDF').addEventListener('click', async () => {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+
+    // Capture the chart as an image
+    const chartContainer = document.getElementById('chartContainer');
+    const canvasImage = await html2canvas(chartContainer).then(canvas => canvas.toDataURL('image/png'));
+
+    // Get selected options text
+    const selectedField = document.getElementById('gasFieldSelector').selectedOptions[0].text;
+    const selectedWells = Array.from(document.querySelectorAll('input[name="wellSelector"]:checked'))
+        .map(checkbox => document.querySelector(`label[for="well_${checkbox.value}"]`).textContent.trim())
+        .join(', ');
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const xAxis = document.getElementById('xAxisSelector').selectedOptions[0].text;
+    const selectedYAxis = Array.from(document.querySelectorAll('input[name="yAxisSelector"]:checked'))
+        .map(checkbox => checkbox.labels[0].textContent)
+        .join(', ');
+    const isLogScale = document.getElementById('logScale').checked ? "Yes" : "No";
+
+    // Add selected options to PDF
+    pdf.setFontSize(12);
+    pdf.text("Production Analysis Report", 10, 10);
+    pdf.text(`Gas Field: ${selectedField}`, 10, 20);
+    pdf.text(`Wells: ${selectedWells}`, 10, 30);
+    pdf.text(`Date Range: ${startDate} to ${endDate}`, 10, 40);
+    //pdf.text(`X-Axis: ${xAxis}`, 10, 50);
+    //pdf.text(`Y-Axis Parameters: ${selectedYAxis}`, 10, 60);
+    //pdf.text(`Logarithmic Scale: ${isLogScale}`, 10, 70);
+
+    // Add chart image to PDF
+    pdf.addImage(canvasImage, 'PNG', 10, 80, 190, 90);
+    pdf.setFontSize(8);
+    pdf.text("All Rights Reserved @R&D,BAPEX,2024", 90, 170);
+
+    // Save the PDF
+    pdf.save('Production_Analysis_Report.pdf');
+});
+
 </script>
 {% endblock %}
