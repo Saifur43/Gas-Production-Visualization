@@ -1,7 +1,3 @@
-Here's a `README.md` template for your gas field production data analysis Django project. It includes sections that outline the project's purpose, setup instructions, usage, and more.
-
----
-
 # Gas Field Production Data Analysis Dashboard
 
 This project is a Django web application that visualizes production data for gas fields. It provides an interactive dashboard where users can filter by gas fields, wells, date ranges, and data attributes, and it offers various customization options, such as enabling logarithmic scales. The dashboard also supports exporting the analysis as a PDF.
